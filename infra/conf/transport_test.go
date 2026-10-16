@@ -367,19 +367,42 @@ func TestXDriveTemplateNeedsTemplate(t *testing.T) {
 }
 
 func TestTLSConfigAllowInsecure(t *testing.T) {
-	config := new(TLSConfig)
-	if err := json.Unmarshal([]byte(`{"allowInsecure": true}`), config); err != nil {
+	// Test default (omitted) is true
+	configDefault := new(TLSConfig)
+	if err := json.Unmarshal([]byte(`{}`), configDefault); err != nil {
 		t.Fatalf("Unmarshal: %v", err)
 	}
-	built, err := config.Build()
+	builtDefault, err := configDefault.Build()
 	if err != nil {
 		t.Fatalf("Build: %v", err)
 	}
-	tlsConfig, ok := built.(*tls.Config)
-	if !ok {
-		t.Fatalf("expected *tls.Config, got %T", built)
+	if !builtDefault.(*tls.Config).AllowInsecure {
+		t.Fatal("expected AllowInsecure to be true by default")
 	}
-	if !tlsConfig.AllowInsecure {
-		t.Fatal("expected AllowInsecure to be true")
+
+	// Test explicit false
+	configFalse := new(TLSConfig)
+	if err := json.Unmarshal([]byte(`{"allowInsecure": false}`), configFalse); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	builtFalse, err := configFalse.Build()
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if builtFalse.(*tls.Config).AllowInsecure {
+		t.Fatal("expected AllowInsecure to be false when explicitly configured")
+	}
+
+	// Test explicit true
+	configTrue := new(TLSConfig)
+	if err := json.Unmarshal([]byte(`{"allowInsecure": true}`), configTrue); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	builtTrue, err := configTrue.Build()
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if !builtTrue.(*tls.Config).AllowInsecure {
+		t.Fatal("expected AllowInsecure to be true when explicitly configured")
 	}
 }

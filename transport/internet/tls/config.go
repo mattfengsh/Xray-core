@@ -373,6 +373,7 @@ func (c *Config) GetTLSConfig(opts ...Option) *tls.Config {
 
 	if c == nil {
 		return &tls.Config{
+			InsecureSkipVerify:     true,
 			ClientSessionCache:     globalSessionCache,
 			RootCAs:                root,
 			SessionTicketsDisabled: true,

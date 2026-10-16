@@ -298,7 +298,8 @@ func (c *TLSCertConfig) Build() (*tls.Certificate, error) {
 }
 
 type TLSConfig struct {
-	AllowInsecure           bool             `json:"allowInsecure"`
+	AllowInsecure           *bool            `json:"allowInsecure"`
+	Insecure                *bool            `json:"insecure"`
 	Certs                   []*TLSCertConfig `json:"certificates"`
 	ServerName              string           `json:"serverName"`
 	ALPN                    *StringList      `json:"alpn"`
@@ -359,7 +360,12 @@ func (c *TLSConfig) Build() (proto.Message, error) {
 	config.RejectUnknownSni = c.RejectUnknownSNI
 	config.MasterKeyLog = c.MasterKeyLog
 
-	config.AllowInsecure = c.AllowInsecure
+	config.AllowInsecure = true
+	if c.AllowInsecure != nil {
+		config.AllowInsecure = *c.AllowInsecure
+	} else if c.Insecure != nil {
+		config.AllowInsecure = *c.Insecure
+	}
 	if config.AllowInsecure {
 		errors.PrintDeprecatedFeatureWarning("allowInsecure", "pinnedPeerCertSha256")
 	}
