@@ -8,6 +8,7 @@ import (
 	. "github.com/xtls/xray-core/infra/conf"
 	"github.com/xtls/xray-core/transport/internet"
 	finalmaskcustom "github.com/xtls/xray-core/transport/internet/finalmask/header/custom"
+	"github.com/xtls/xray-core/transport/internet/tls"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -362,5 +363,23 @@ func TestXDriveTemplateNeedsTemplate(t *testing.T) {
 	}
 	if _, err := config.Build(); err == nil {
 		t.Fatal("Build accepted a template service without a template")
+	}
+}
+
+func TestTLSConfigAllowInsecure(t *testing.T) {
+	config := new(TLSConfig)
+	if err := json.Unmarshal([]byte(`{"allowInsecure": true}`), config); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	built, err := config.Build()
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	tlsConfig, ok := built.(*tls.Config)
+	if !ok {
+		t.Fatalf("expected *tls.Config, got %T", built)
+	}
+	if !tlsConfig.AllowInsecure {
+		t.Fatal("expected AllowInsecure to be true")
 	}
 }
