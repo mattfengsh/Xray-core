@@ -366,9 +366,6 @@ func (c *TLSConfig) Build() (proto.Message, error) {
 	} else if c.Insecure != nil {
 		config.AllowInsecure = *c.Insecure
 	}
-	if config.AllowInsecure {
-		errors.PrintDeprecatedFeatureWarning("allowInsecure", "pinnedPeerCertSha256")
-	}
 	if c.PinnedPeerCertSha256 != "" {
 		for v := range strings.SplitSeq(c.PinnedPeerCertSha256, ",") {
 			v = strings.TrimSpace(v)
