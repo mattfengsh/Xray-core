@@ -10,6 +10,7 @@ import (
 	"github.com/xtls/xray-core/transport/internet"
 	finalmaskcustom "github.com/xtls/xray-core/transport/internet/finalmask/header/custom"
 	"github.com/xtls/xray-core/transport/internet/splithttp"
+	"github.com/xtls/xray-core/transport/internet/tls"
 	"github.com/xtls/xray-core/transport/internet/xdrive"
 	"google.golang.org/protobuf/proto"
 )
@@ -636,3 +637,45 @@ func TestXDriveXmux(t *testing.T) {
 		t.Error("Build accepted maxConnections with maxConcurrency")
 	}
 }
+
+func TestTLSConfigAllowInsecure(t *testing.T) {
+	// Test default (omitted) is true
+	configDefault := new(TLSConfig)
+	if err := json.Unmarshal([]byte(`{}`), configDefault); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	builtDefault, err := configDefault.Build()
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if !builtDefault.(*tls.Config).AllowInsecure {
+		t.Fatal("expected AllowInsecure to be true by default")
+	}
+
+	// Test explicit false
+	configFalse := new(TLSConfig)
+	if err := json.Unmarshal([]byte(`{"allowInsecure": false}`), configFalse); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	builtFalse, err := configFalse.Build()
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if builtFalse.(*tls.Config).AllowInsecure {
+		t.Fatal("expected AllowInsecure to be false when explicitly configured")
+	}
+
+	// Test explicit true
+	configTrue := new(TLSConfig)
+	if err := json.Unmarshal([]byte(`{"allowInsecure": true}`), configTrue); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	builtTrue, err := configTrue.Build()
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if !builtTrue.(*tls.Config).AllowInsecure {
+		t.Fatal("expected AllowInsecure to be true when explicitly configured")
+	}
+}
+
